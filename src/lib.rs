@@ -241,7 +241,7 @@ impl PassioGoClient {
                 latitude: to_f64(v.get("latitude")),
                 longitude: to_f64(v.get("longitude")),
                 speed: to_f64(v.get("speed")),
-                pax_load: to_f64(v.get("paxLoad100")),
+                pax_load: to_f64(v.get("paxLoad")),
                 out_of_service: to_bool(v.get("outOfService")),
                 more: to_string_opt(v.get("more")),
                 trip_id: to_string_opt(v.get("tripId")),

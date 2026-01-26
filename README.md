@@ -10,6 +10,7 @@ A minimal Rust client for Passio GO APIs. The project currently supports fetchin
 - Fetch alerts
 - Fetch vehicles
 - Fetch stops
+- Fetch ETAs
 
 ## Status
 Work in progress. API coverage is partial and may change.

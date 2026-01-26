@@ -103,5 +103,10 @@ async fn main() {
         //         ))
         //         .collect::<Vec<String>>()
         // );
+
+        match client.get_buses(lehigh.id).await {
+            Ok(x) => println!("{:#?}", x),
+            Err(_e) => return,
+        }
     }
 }
