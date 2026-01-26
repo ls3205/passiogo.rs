@@ -1,4 +1,4 @@
-use passiogo_rs::PassioGoClient;
+use passiogo_rs::{PassioGoClient, StopData};
 
 #[tokio::main]
 async fn main() {
@@ -24,8 +24,84 @@ async fn main() {
         }
     };
 
-    match client.get_stops(lehigh.id).await {
-        Ok(x) => println!("{:#?}", x),
-        Err(e) => eprint!("Failed to fetch alerts: {}", e),
+    let stops = match client.get_stops(lehigh.id).await {
+        Ok(x) => x,
+        Err(_e) => return,
+    };
+
+    let routes = match client.get_routes(lehigh.id).await {
+        Ok(x) => x,
+        Err(_e) => return,
+    };
+
+    let cc = routes
+        .iter()
+        .find(|r| r.name.as_deref().unwrap_or("").contains("Campus Conn"));
+
+    if let Some(cc) = cc {
+        let mut cc_stops: Vec<StopData> = stops
+            .iter()
+            .filter(|s| {
+                s.routes_and_positions
+                    .keys()
+                    .any(|k| k == &cc.myid.clone().unwrap_or("".to_string()))
+            })
+            .cloned()
+            .collect::<Vec<StopData>>();
+
+        cc_stops.sort_by(|a, b| {
+            let pos_a = a
+                .routes_and_positions
+                .get(&cc.myid.clone().unwrap_or("".to_string()))
+                .and_then(|v| v.first())
+                .unwrap_or(&f64::MAX);
+            let pos_b = b
+                .routes_and_positions
+                .get(&cc.myid.clone().unwrap_or("".to_string()))
+                .and_then(|v| v.first())
+                .unwrap_or(&f64::MAX);
+
+            pos_a
+                .partial_cmp(pos_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        if !cc_stops.is_empty() {
+            let stop = cc_stops.first().unwrap();
+
+            let etas = match client
+                .get_etas(
+                    &stop.id,
+                    &cc.myid.clone().unwrap_or("".to_string()),
+                    stop.routes_and_positions
+                        .get(&cc.myid.clone().unwrap_or("".to_string()))
+                        .and_then(|v| v.first())
+                        .unwrap_or(&0.0),
+                    &lehigh.id,
+                )
+                .await
+            {
+                Ok(x) => x,
+                Err(_e) => return,
+            };
+
+            println!("{:#?}", etas);
+        }
+
+        // println!(
+        //     "{:#?}",
+        //     cc_stops
+        //         .iter()
+        //         .map(|s| format!(
+        //             "{}: {}",
+        //             s.name.clone().unwrap_or("Unknown Stop".to_string()),
+        //             s.routes_and_positions
+        //                 .get(&cc.myid.clone().unwrap_or("".to_string()))
+        //                 .unwrap_or(&vec![])
+        //                 .first()
+        //                 .unwrap_or(&f64::MAX)
+        //         ))
+        //         .collect::<Vec<String>>()
+        // );
     }
 }

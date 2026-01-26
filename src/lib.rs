@@ -1,10 +1,14 @@
 use serde_json::Value;
 
 use crate::helpers::{to_bool, to_f64, to_i64, to_string_opt};
-use crate::types::{RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData};
+// use crate::types::{RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData};
 
 mod helpers;
 mod types;
+
+pub use types::{
+    ETAData, RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData,
+};
 
 #[derive(Clone)]
 pub struct PassioGoClient {
@@ -321,5 +325,88 @@ impl PassioGoClient {
         }
 
         Ok(stop_data)
+    }
+
+    pub async fn get_etas(
+        &self,
+        stop_id: &String,
+        route_id: &String,
+        position: &f64,
+        system_id: &i64,
+    ) -> Result<Vec<ETAData>, reqwest::Error> {
+        let url = format!(
+            "{}/mapGetData.php?eta=3&stopIds={}&routeId={}&userId={}&position={}",
+            self.base_url, stop_id, route_id, system_id, position
+        );
+        let data = self
+            .send_api_request(&url, Some(serde_json::json!({})))
+            .await?;
+
+        let list = data
+            .get("ETAs")
+            .and_then(|v| v.as_object())
+            .cloned()
+            .unwrap_or_default()
+            .get("0000")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default();
+
+        let mut etas: Vec<ETAData> = vec![];
+
+        for eta in list {
+            etas.push(ETAData {
+                bus_name: eta
+                    .get("busName")
+                    .unwrap_or_default()
+                    .to_string()
+                    .trim_matches('"')
+                    .to_string(),
+                eta: eta
+                    .get("eta")
+                    .unwrap_or_default()
+                    .to_string()
+                    .trim_matches('"')
+                    .to_string(),
+                eta_note: to_string_opt(eta.get("etaNote")),
+                go_show_schedule: eta.get("goShowSchedule").unwrap_or_default().as_i64(),
+                order: eta.get("order").unwrap_or_default().as_i64(),
+                out_of_service: eta
+                    .get("outOfService")
+                    .unwrap_or_default()
+                    .as_bool()
+                    .unwrap_or(false),
+                reason: eta
+                    .get("reason")
+                    .unwrap_or_default()
+                    .to_string()
+                    .trim_matches('"')
+                    .to_string(),
+                route_id: eta
+                    .get("routeId")
+                    .unwrap_or_default()
+                    .to_string()
+                    .trim_matches('"')
+                    .to_string(),
+                schedule_not_empty: eta.get("scheduleNotEmpty").unwrap_or_default().as_i64(),
+                schedule_time: to_string_opt(eta.get("scheduleTime")),
+                schedule_times: Some(
+                    eta.get("scheduleTimes")
+                        .unwrap_or_default()
+                        .as_array()
+                        .unwrap_or(&vec![])
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect::<Vec<String>>(),
+                ),
+                seconds_spent: eta
+                    .get("secondsSpent")
+                    .unwrap_or_default()
+                    .as_i64()
+                    .unwrap_or_default(),
+            });
+        }
+
+        Ok(etas)
     }
 }

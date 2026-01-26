@@ -103,3 +103,19 @@ pub struct VehicleData {
     pub more: Option<String>,
     pub trip_id: Option<String>,
 }
+
+#[derive(Debug, Default, Clone)]
+pub struct ETAData {
+    pub bus_name: String,
+    pub eta: String,
+    pub eta_note: Option<String>,
+    pub go_show_schedule: Option<i64>,
+    pub order: Option<i64>,
+    pub out_of_service: bool,
+    pub reason: String,
+    pub route_id: String,
+    pub schedule_not_empty: Option<i64>,
+    pub schedule_time: Option<String>,
+    pub schedule_times: Option<Vec<String>>,
+    pub seconds_spent: i64,
+}
