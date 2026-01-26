@@ -37,7 +37,7 @@ async fn main() {
     let uchicago = systems
         .iter()
         .find(|s| s.name.as_deref().unwrap_or("").contains("Chicago"))
-        .expect("Lehigh not found");
+        .expect("UChicago not found");
 
     let stops = client.get_stops(uchicago.id).await.unwrap();
     println!("{:#?}", stops);
