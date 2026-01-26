@@ -4,7 +4,6 @@ version = "0.0.1"
 edition = "2024"
 authors = ["Leon Schaumann"]
 license = "MIT"
-license-file = "LICENSE"
 description = "Rust client for the Passio Go Bus Tracking API used at many major universities and in cities around the U.S."
 repository = "https://github.com/ls3205/passiogo.rs"
 
