@@ -1,7 +1,6 @@
 use serde_json::Value;
 
 use crate::helpers::{to_bool, to_f64, to_i64, to_string_opt};
-// use crate::types::{RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData};
 
 mod helpers;
 mod types;
@@ -10,7 +9,7 @@ pub use types::{
     ETAData, RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData,
 };
 
-#[derive(Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PassioGoClient {
     base_url: String,
     client: reqwest::Client,
