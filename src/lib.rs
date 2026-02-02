@@ -9,16 +9,25 @@ pub use types::{
     ETAData, RouteData, StopData, SystemAlertData, TransportationSystemData, VehicleData,
 };
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct PassioGoClient {
     base_url: String,
     client: reqwest::Client,
 }
 
-impl PassioGoClient {
-    pub fn new() -> Self {
+impl Default for PassioGoClient {
+    fn default() -> Self {
         Self {
             base_url: "https://passiogo.com".to_string(),
+            client: reqwest::Client::new(),
+        }
+    }
+}
+
+impl PassioGoClient {
+    pub fn new(url: Option<String>) -> Self {
+        Self {
+            base_url: url.unwrap_or("https://passiogo.com".to_string()),
             client: reqwest::Client::new(),
         }
     }
